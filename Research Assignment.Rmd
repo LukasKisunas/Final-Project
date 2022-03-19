@@ -1,0 +1,216 @@
+---
+title: "My name goes here"
+subtitle: "The names of the people I have worked with go here"
+date: "`r Sys.time()`"
+output: 
+  pdf_document
+urlcolor: blue
+---
+
+```{r include=FALSE, eval=TRUE}
+library("knitr")
+library("pwr") 
+library("broom") 
+library("effectsize")
+library("emmeans") 
+library("janitor") 
+library("GGally")
+library("tidyverse") 
+library("ggpubr")
+
+theme_set(theme_classic())
+```
+
+# Instructions
+```{r}
+df.data = read_csv("responses.csv") %>%
+  rename(average_sleep = 'average sleep',
+         average_quality = 'average quality',
+         average_mood = 'average mood',
+         midterm_sleep = 'midterm sleep',
+         midterm_quality = 'midterm quality',
+         midterm_mood = 'midterm mood')
+
+```
+
+```{r}
+mean(df.data$average_sleep)
+mean(df.data$average_quality)
+mean(df.data$average_mood)
+
+sd(df.data$average_sleep)
+sd(df.data$average_quality)
+sd(df.data$average_mood)
+
+
+mean(df.data$midterm_sleep)
+mean(df.data$midterm_quality)
+mean(df.data$midterm_mood)
+
+
+sd(df.data$midterm_sleep)
+sd(df.data$midterm_quality)
+sd(df.data$midterm_mood)
+
+
+t.test(df.data$midterm_sleep, mu = 7.718 )
+t.test(df.data$midterm_quality, mu = 7.281 )
+t.test(df.data$midterm_mood, mu = 7.968 )
+
+fms = lm(df.data$midterms~df.data$midterm_sleep)
+summary(fms)
+
+fmq = lm(df.data$midterms~df.data$midterm_quality)
+summary(fmq)
+
+fmm = lm(df.data$midterms~df.data$midterm_mood)
+summary(fmm)
+
+```
+```{r}
+
+fit.midterm = lm(formula = df.data$midterms ~ (df.data$midterm_sleep + df.data$midterm_quality + df.data$midterm_mood),
+              data = df.data)
+fit.midterm %>%
+  anova()
+
+pwr.anova.test(k = 2,
+               n = NULL,
+               f = 0.699,
+               sig.level = 0.05,
+               power = 0.8)
+
+```
+```{r}
+ggplot(data = df.data,
+       mapping = aes(x = df.data$midterms,
+                     y = df.data$participants,
+                     )) +
+  geom_point() +
+  labs(title = "Number of Midters",
+       x = "Midterms",
+       y = "Participants")
+  
+```
+```{r}
+
+
+
+AS <- ggplot(data = df.data, 
+                 aes(x = participants,
+                     y = average_sleep)) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Hours of Sleep",
+       x = "Participants",
+       y = "Hours of Sleep") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3)
+
+
+MS <- ggplot(data = df.data, 
+       aes(x = participants,
+           y = midterm_sleep,
+           fill = "red")) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Hours of Sleep During Midterms",
+       x = "Participants",
+       y = "Hours of Sleep") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3) 
+
+AQ <- ggplot(data = df.data, 
+       aes(x = participants,
+           y = average_quality)) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Quality of Sleep During",
+       x = "Participants",
+       y = "Quality of Sleep") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3)
+
+MQ <- ggplot(data = df.data, 
+       aes(x = participants,
+           y = midterm_quality,
+           fill = "red")) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Quality of Sleep During Midterms",
+       x = "Participants",
+       y = "Quality of Sleep") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3)
+
+AM <- ggplot(data = df.data, 
+       aes(x = participants,
+           y = average_mood)) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Mood",
+       x = "Participants",
+       y = "Mood") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3)
+
+MM <- ggplot(data = df.data, 
+       aes(x = participants,
+           y = midterm_mood,
+           fill = "red")) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Mood During Midterms",
+       x = "Participants",
+       y = "Mood") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3)
+
+figure_1 <- ggarrange(AS, AQ, AM, MS, MQ, MM,
+                    labels = c("A", "B", "C", "D", "E", "F"),
+                    ncol = 3, nrow = 3)
+figure_1
+
+
+```
+
+```{r}
+ggplot(data = df.data, 
+       aes(x = participants,
+           y = midterm_mood)) +
+  geom_col(position = position_dodge()) +
+  labs(title = "Average Mood During Midterms",
+       x = "Participants",
+       y = "Mood") +
+  theme(legend.position="none") +
+  geom_hline(yintercept = seq(from = 0,
+                              to = 10,
+                              by = 1),
+             linetype = 2,
+             alpha = 0.3)
+  
+```
+# Part 1 (5 points)
+
+## Load and visualize data
+
+### __1.1__ (1 points)
+
